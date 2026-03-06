@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>BTC Leverage Dashboard</title>
+<style>
+body{
+    background:#0b0b0b;
+    color:white;
+    font-family:Arial;
+    margin:0;
+    padding:30px;
+}
+.container{
+    max-width:1100px;
+    margin:auto;
+}
+.card{
+    background:#141414;
+    padding:20px;
+    border-radius:10px;
+    margin-bottom:20px;
+    box-shadow:0 0 10px rgba(0,0,0,0.6);
+}
+.header{
+    font-size:28px;
+    font-weight:bold;
+}
+.price{
+    font-size:34px;
+    color:#00ff88;
+    margin-top:10px;
+}
+.stats{
+    display:flex;
+    gap:20px;
+    margin-top:10px;
+}
+.stat{
+    background:#1b1b1b;
+    padding:10px 15px;
+    border-radius:6px;
+}
+.green{color:#00ff88;}
+.red{color:#ff4d4d;}
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+}
+th,td{
+    padding:10px;
+    border-bottom:1px solid #333;
+    text-align:center;
+}
+th{
+    background:#1a1a1a;
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="card">
+    <div class="header">₿ BTC Leverage Dashboard</div>
+    <div class="price" id="price">Loading...</div>
+    <div class="stats">
+        <div class="stat">
+            1H Change  
+            <span id="h1"></span>
+        </div>
+        <div class="stat">
+            1D Change  
+            <span id="d1"></span>
+        </div>
+    </div>
+</div>
+
+<div id="tables"></div>
+
+<script>
+const endpoint="http://127.0.0.1:5000/api/trend?symbol=BTC"
+
+function loadData(){
+    fetch(endpoint)
+    .then(r=>r.json())
+    .then(data=>{
+        document.getElementById("price").innerText="$"+data.price
+        let h1=document.getElementById("h1")
+        let d1=document.getElementById("d1")
+        h1.innerText=data.btc_h1_change
+        d1.innerText=data.btc_d1_change
+        h1.className=data.btc_h1_change.includes("-")?"red":"green"
+        d1.className=data.btc_d1_change.includes("-")?"red":"green"
+        renderTables(data.leverage_table)
+    })
+}
+
+function renderTables(tableData){
+    let html=""
+    for(let lev in tableData){
+        let block=tableData[lev]
+        html+=`
+        <div class="card">
+        <h2>${lev} Leverage (Current: $${block.current_price})</h2>
+        <table>
+        <tr>
+            <th>Level</th>
+            <th>% Move</th>
+            <th>Points</th>
+            <th>Long Target</th>
+            <th>Short Target</th>
+        </tr>
+        `
+        block.levels.forEach(l=>{
+            html+=`
+            <tr>
+            <td>${l.level}</td>
+            <td>${l.percent_move}%</td>
+            <td>${l.points}</td>
+            <td class="green">${l.long_target}</td>
+            <td class="red">${l.short_target}</td>
+            </tr>
+            `
+        })
+        html+=`</table></div>`
+    }
+    document.getElementById("tables").innerHTML=html
+}
+
+loadData()
+</script>
+</body>
+</html>
