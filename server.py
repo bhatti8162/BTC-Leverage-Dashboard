@@ -4,7 +4,6 @@ from config import SYMBOL_DEFAULT
 
 from services.last_change import get_change
 from services.leverage_table import leverage_table
-from services.color_detection import get_candle_colors
 
 
 
